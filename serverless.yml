@@ -1,0 +1,117 @@
+service: bgc-scrapers
+
+plugins:
+  - serverless-export-env
+  - serverless-webpack
+  - serverless-plugin-stage-variables
+  - serverless-prune-plugin
+  - serverless-iam-roles-per-function
+  - bgc-serverless-plugin-tag-template
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  memorySize:
+    dev: 128
+    staging: 128
+    production: 256
+  serverless-iam-roles-per-function:
+    defaultInherit: true
+  webpack:
+    webpackConfig: "./webpack.config.js"
+    includeModules:
+      forceExclude:
+        - chrome-aws-lambda
+  awsId:
+    dev: "150996556957"
+    staging: "618187453002"
+    production: "633732583642"
+  jwtKey:
+    dev: Wpsj25a1i8cpq0eJHCfacI1SQHvjFg21t0XfHmmOcaxN5pcJZ7fiMjJEIfaHNLf88LZRI3zSwSfCH8ym1Akx1GVjsxiQHt33DZpKeKnqJxuHJIn2pyjHKUoYwUe0GEcBS6rY50e0FR574ymiQdaKqNaayRCipnd6L3HXkegKe7
+    staging: Wpsj25a1i8cpq0eJHCfacI1SQHvjFg21t0XfHmmOcaxN5pcJZ7fiMjJEIfaHNLf88LZRI3zSwSfCH8ym1Akx1GVjsxiQHt33DZpKeKnqJxuHJIn2pyjHKUoYwUe0GEcBS6rY50e0FR574ymiQdaKqNaayRCipnd6L3HXkegKe7
+    production: GPXgFJhMnXCoFCvROEUyHLSaAjoCBhjiZHWQVCqGFlavXHZZVViXUgDyBesLrvWABYdMYD
+  prune:
+    automatic: true
+    number: 20
+  splitStacks:
+    perFunction: false
+    perType: true
+  baseFunctionName: arn:aws:lambda:sa-east-1:${self:custom.awsId.${self:custom.stage}}:function:${self:service}-${self:custom.stage}-
+  systemToken:
+    dev: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsImFwaUtleSI6IkRMRDYxTkFIMFg0Zkc3ZXplQVhhVDZNRW04QzJLY3dGN2dOQ1VoelgiLCJpc3MiOiJodHRwczovL2FkbWluLmRldi1iZ2NicmFzaWwuY2YifQ.wVK3y8VJWYqWWiE3moLw7lAvtHXUaP0p_x5dagyT150
+    staging: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsImFwaUtleSI6IkFJWEdWM0x6UUkxZHVtd3oxdlBFVzdqNlBTeXNrY0RpNE9kNFd5STAiLCJpc3MiOiJodHRwczovL2FkbWluLnN0YWdpbmctYmdjYnJhc2lsLmNmIn0.F7VQNWQtDulaI_Dh1fdtfWfiHOSUIlMJAJArctfjjPc
+    production: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzeXN0ZW0iOnRydWUsImFwaUtleSI6IjFaU1ZFb09XYVAxNVNoWThCbTZISjk4MW9aMTBuYWw5NGs2VVZiS20iLCJpc3MiOiJodHRwczovL2FkbWluLmJnY2JyYXNpbC5jb20uYnIifQ.BFiVGKbY72JxYBzEhKjOvP7Ge-fYd6Nzu9BPkheGRvw
+  certificateArn:
+    dev: arn:aws:acm:us-east-1:${self:custom.awsId.${self:custom.stage}}:certificate/0a67a68f-d0af-4cb1-a92f-77529f506de7
+    staging: arn:aws:acm:us-east-1:${self:custom.awsId.${self:custom.stage}}:certificate/8bcaa3ae-725a-4937-84ea-ada72ce268e4
+    production: arn:aws:acm:us-east-1:${self:custom.awsId.${self:custom.stage}}:certificate/1cd4a911-d01d-439a-82c7-3f9a2c8658e9
+  domain:
+    dev: dev-bgcbrasil.cf
+    staging: staging-bgcbrasil.cf
+    production: bgcbrasil.com.br
+  hostedZoneId:
+    dev: Z0677919782XVFIDAJ1M
+    staging: Z067774619I5AUFMG10FP
+    production: Z04599882SP9YBBDRU4Y1
+  customTagKey: "user:resource-byname"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: sa-east-1
+  profile: ${self:custom.stage}-bgc
+  timeout: 30
+  memorySize: ${self:custom.memorySize.${self:custom.stage}}
+  versionFunctions: false
+  environment:
+    serviceName: ${self:service}
+    region: ${self:provider.region}
+    stage: ${self:custom.stage}
+    jwtKey: ${self:custom.jwtKey.${self:custom.stage}}
+    domain: ${self:custom.domain.${self:custom.stage}}
+    baseFunctionName: ${self:custom.baseFunctionName}
+    systemToken: ${self:custom.systemToken.${self:custom.stage}}
+    s3EvidencesBucket: bgc-crawlers-${self:custom.stage}-evidences
+    s3ResultsBucket: bgc-crawlers-${self:custom.stage}-results
+    s3ChromeBinaryBucket: ${self:service}-${self:custom.stage}-chrome-binary
+    s3ScraperEntriesBucket: ${self:service}-${self:custom.stage}-scraper-entries
+    s3ScraperSuccessBucket: bgc-crawlers-${self:custom.stage}-scraper-success
+    s3ScraperErrorBucket: bgc-crawlers-${self:custom.stage}-scraper-error
+    chromeBinaryZip: chrome-linux.zip
+    chromeAwsLambdaLayerArn: ${cf:bgc-scrapers-layers-${self:custom.stage}.ChromeAwsLambdaExport}
+    # sharedLayer: ${self:service}-${self:custom.stage}-shared-layer
+
+package:
+  individually: true
+  patterns:
+    - "!.serverless/**"
+    - "!.git/**"
+    - "!node_modules/**"
+    - "!__tests__/**"
+    - "!src/serverless-plugins/**"
+
+functions:
+  - ${file(sls/functions/extractLinkedin.yml)}
+  # - ${file(sls/functions/crawl/criminal.yml)}
+  # - ${file(sls/functions/crawl/certificate.yml)}
+  # - ${file(sls/functions/crawl/namechecker.yml)}
+  # - ${file(sls/functions/crawl/cpfchecker.yml)}
+  # - ${file(sls/functions/crawl/company.yml)}
+  # - ${file(sls/functions/crawl/adversemediachecker.yml)}
+  # - ${file(sls/functions/crawl/insurancechecker.yml)}
+  # - ${file(sls/functions/crawl/councilchecker.yml)}
+  # - ${file(sls/functions/crawl/immobilechecker.yml)}
+  # - ${file(sls/functions/crawl/charterrecordchecker.yml)}
+
+  # - ${file(sls/functions/newScraperEntry.yml)}
+
+resources:
+  # - ${file(sls/resources/s3/s3ChromeBinaryBucket.yml)}
+  # - ${file(sls/resources/api/scrapersDomain.yml)}
+  # # Layers
+  # - ${file(sls/resources/layers/sharedLayer.yml)}
+# layers:
+#   commonLibs:
+#     path: layer
+#     compatibleRuntimes:
+#       - nodejs12.x

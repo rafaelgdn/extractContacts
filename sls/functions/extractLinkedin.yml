@@ -1,0 +1,12 @@
+ExtractLinkedin:
+  name: Pinhao-ExtractLinkedin
+  handler: src/functions/extractLinkedin.main
+  timeout: 900
+  memorySize: 10240
+  iamRoleStatementsName: ${self:service}-${self:custom.stage}-EL-lambdaRole
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "*"
+      Resource: "*"
+  layers:
+    - ${self:provider.environment.chromeAwsLambdaLayerArn}

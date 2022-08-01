@@ -1,0 +1,5 @@
+Resources:
+  S3ChromeBinaryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:provider.environment.s3ChromeBinaryBucket}

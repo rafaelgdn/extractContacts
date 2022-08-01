@@ -1,0 +1,10 @@
+Resources:
+  SharedLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: ${self:provider.environment.sharedLayer}
+      Description: Layer that contains shared lib
+      LicenseInfo: "Available under the MIT license."
+      ContentUri: ./sharedLayer
+      CompatibleRuntimes:
+        - nodejs12.x
